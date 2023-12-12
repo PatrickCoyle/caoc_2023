@@ -1,0 +1,27 @@
+project:
+  type: website
+  output-dir: docs
+  render:
+    - "*.qmd"
+    - "!dev/"
+
+website:
+  title: "caoc_2023"
+  favicon: aoc2023.jpg
+  site-url: https://patrickcoyle.github.io/caoc_2023
+  description: "Advent of Code 2023"
+  navbar:
+    title: "Advent of Code 2023"
+    search: true
+    right:
+      - text: "Solutions"
+        href: blog.qmd
+        
+format:
+  html:
+    page-layout: full
+    theme: cyborg
+    css: styles.css
+
+
+

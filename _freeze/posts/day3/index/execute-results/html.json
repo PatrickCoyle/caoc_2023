@@ -1,0 +1,14 @@
+{
+  "hash": "dc10f72fc2fa26ca91b86474ff0a84fc",
+  "result": {
+    "markdown": "---\ntitle: \"Day 2\"\nauthor: \"Patrick Coyle\"\ndate: today\nexecute:\n  warning: false\n---\n\n\n# Puzzle\n\n<https://adventofcode.com/2023/day/3>\n\n# Solution\n\n\n::: {.cell}\n\n```{.r .cell-code}\nlibrary(dplyr)\nlibrary(purrr)\nlibrary(stringr)\nlibrary(tidyr)\nlibrary(conflicted)\nconflicts_prefer(dplyr::filter)\nhelper1_20231206 <- function (x, str) {\n  x %>% \n    stringr::str_locate_all(str) %>% \n    map(~.x %>% \n          as_tibble() %>% \n          transmute(column = start, type = names(str))\n    )\n}\ntidy_up <- function (input_df) {\n  input_df %>% \n    mutate(\n      X2 = helper1_20231206(X1, c(digit = \"[0-9]\")),\n      X3 = helper1_20231206(X1, c(period = \"\\\\.\"))\n    ) %>%\n    rowwise() %>%\n    transmute(\n      row = 1:n(),\n      X4 = tibble(column = 1:140) %>% \n        left_join(bind_rows(X2, X3), by = \"column\") %>% \n        mutate(type = case_when(is.na(type) ~ \"symbol\", TRUE ~ type)) %>% \n        list()\n    ) %>%\n    ungroup() %>% \n    unnest(cols = X4)\n}\ninput_df = readr::read_delim(\n  \"input.txt\", \n  delim = \"|\", \n  col_names = FALSE\n)\ndf2 <- tidy_up(input_df)\n```\n:::\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

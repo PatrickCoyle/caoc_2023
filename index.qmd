@@ -1,0 +1,10 @@
+---
+title: "Season's Greetings!"
+image: aoc2023.jpg
+about:
+  template: jolla
+---
+
+Welcome to Patrick Coyle's [Advent of Code 2023](https://adventofcode.com/) blog.
+
+My solutions to each day's puzzle are [here](blog.qmd).

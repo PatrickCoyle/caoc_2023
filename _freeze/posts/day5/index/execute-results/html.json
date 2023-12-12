@@ -1,0 +1,14 @@
+{
+  "hash": "da21b483e1f1f21900cfc8f33f7a8538",
+  "result": {
+    "markdown": "---\ntitle: \"Day 5\"\nauthor: \"Patrick Coyle\"\ndate: today\nexecute:\n  warning: false\n---\n\n\n\n\n# Puzzle\n\n<https://adventofcode.com/2023/day/5>\n\n# Solution\n\n## Preprocessing\n\n\n::: {.cell}\n\n```{.r .cell-code}\nseeds <- readr::read_delim(\n  \"input.txt\", \n  delim = \" \", \n  skip = 0,\n  n_max = 1,\n  col_names = FALSE\n)\nref_list <- tribble(\n  ~name, ~first_row, ~last_row,\n  \"seed2soil\", 3, 43,\n  \"soil2fert\", 45, 70,\n  \"fert2water\", 72, 114,\n  \"water2light\", 116, 163,\n  \"light2temp\", 165, 181,\n  \"temp2humidity\", 183, 199,\n  \"humidity2loc\", 201, 213\n)\nxwalk_list <- map(\n  1:nrow(ref_list),\n  \\(this_row) ref_list[this_row,] %$% \n    readr::read_delim(\n      \"input.txt\", \n      delim = \" \", \n      skip = first_row,\n      n_max = last_row - first_row,\n      col_names = FALSE\n    ) %>% \n    setNames(c(\"dest\", \"src\", \"len\")) %>% \n    transmute(\n      src,\n      src_max = src + len - 1,\n      dest,\n      dest_max = dest + len - 1\n    )\n) %>% \n  setNames(ref_list$name)\n```\n:::\n\n\n## Part One\n\n\n::: {.cell}\n\n```{.r .cell-code}\nhelper1_day5 <- function (prev_df, xwalk) {\n  tmp1 <- xwalk %>% \n    filter(src <= prev_df$this_dest & prev_df$this_dest <= src_max) \n  if (nrow(tmp1) > 0) {\n    to_return <- tmp1 %>% \n      mutate(this_dest = dest + (prev_df$this_dest - src))\n  } else if (nrow(tmp1) == 0) {\n    to_return <- tibble(this_dest = prev_df$this_dest) \n  }\n  return(to_return)\n}\nhelper2_day5 <- function (input, xwalk_list) {\n  tibble(this_dest = input) %>% \n    helper1_day5(xwalk_list$seed2soil) %>% \n    helper1_day5(xwalk_list$soil2fert) %>% \n    helper1_day5(xwalk_list$fert2water) %>% \n    helper1_day5(xwalk_list$water2light) %>%\n    helper1_day5(xwalk_list$light2temp) %>%\n    helper1_day5(xwalk_list$temp2humidity) %>%\n    helper1_day5(xwalk_list$humidity2loc) %>% \n    pull(this_dest)\n}\nanswer1 <- seeds %>% \n  select(-X1) %>% \n  unlist() %>% \n  unname() %>% \n  map_dbl(~helper2_day5(.x, xwalk_list = xwalk_list)) %>% \n  min()\nanswer1\n```\n\n::: {.cell-output .cell-output-stdout}\n```\n[1] 462648396\n```\n:::\n:::\n\n\n## Part Two\n\n\n::: {.cell}\n\n:::\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

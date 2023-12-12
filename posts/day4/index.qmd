@@ -1,0 +1,76 @@
+---
+title: "Day 4"
+author: "Patrick Coyle"
+date: today
+execute:
+  warning: false
+---
+
+```{r setup, include = FALSE}
+library(dplyr)
+library(magrittr) ## I use `%<>%` sometimes
+library(purrr)
+library(stringr)
+library(tidyr)
+library(conflicted)
+conflicts_prefer(dplyr::filter)
+```
+
+# Puzzle
+
+<https://adventofcode.com/2023/day/4>
+
+# Solution
+
+## Preprocessing
+
+```{r, warning = FALSE, message = FALSE}
+helper1_day4 <- function (vec, strs_to_drop) {
+  vec %>% 
+    stringr::str_split(" ") %>% 
+    map(~.x %>% 
+          setdiff(strs_to_drop) %>% 
+          as.numeric() %>% 
+          .[!is.na(.)]
+    )
+}
+input_df = readr::read_delim(
+  "input.txt", 
+  delim = "|", 
+  col_names = FALSE
+)
+my_counts <- input_df %>% 
+  transmute(
+    card = 1:n(),
+    winning_numbers = helper1_day4(X1, strs_to_drop = c("Card", "")),
+    my_numbers = helper1_day4(X2, strs_to_drop = "")
+  ) %>% 
+  rowwise() %>% 
+  mutate(count = sum(my_numbers %in% winning_numbers)) %>% 
+  ungroup()
+```
+
+## Part One
+
+```{r}
+answer1 <- sum(ifelse(my_counts$count > 0, 2^(my_counts$count - 1), 0))
+answer1
+```
+
+## Part Two
+
+I find tasks like this -- "bespoke" rowwise data frame manipulation -- to be easier with for loops. Not pretty, but it gets the job done:
+
+```{r}
+tmp1_pt2 <- my_counts %>% 
+  mutate(copies = 1)
+for (card in 1:nrow(tmp1_pt2)) {
+  this_count <- pull(tmp1_pt2[card,], count)
+  if (this_count > 0) {
+    tmp1_pt2$copies[(card + 1):(card + this_count)] %<>% 
+      `+`(tmp1_pt2$copies[card]) ## Syntactic sugar to avoid repeating a long object name
+  }
+}
+answer2 <- sum(tmp1_pt2$copies)
+answer2
+```

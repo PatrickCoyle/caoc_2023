@@ -1,0 +1,81 @@
+---
+title: "Day 2"
+author: "Patrick Coyle"
+date: today
+execute:
+  warning: false
+---
+
+# Puzzle
+
+<https://adventofcode.com/2023/day/2>
+
+# Solution
+
+```{r}
+library(dplyr)
+library(purrr)
+library(stringr)
+library(tidyr)
+library(conflicted)
+conflicts_prefer(dplyr::filter)
+tidy_up <- function (input_df, bag_totals) {
+  to_return <- input_df %>% 
+    mutate(X2 = X1 %>% 
+             stringr::str_remove("Game ") %>% 
+             stringr::str_split(": ")
+    ) %>% 
+    rowwise() %>% 
+    transmute(game = as.numeric(X2[1]), X4 = X2[2]) %>% 
+    ungroup() %>% 
+    mutate(X5 = X4 %>% 
+             stringr::str_split("; ") %>% 
+             map(\(x) x %>% 
+                   stringr::str_split(", ") %>% 
+                   imap_dfr(\(y1, y2) y1 %>% 
+                              stringr::str_split(" ") %>% 
+                              map_dfr(\(z) tibble(count = as.numeric(z[1]), 
+                                                  color = z[2])) %>% 
+                              mutate(iter = y2)
+                   ))) %>% 
+    unnest(cols = c(X5)) %>% 
+    left_join(bag_totals) %>% 
+    mutate(impossible = as.numeric(count > max_count))
+  return(to_return)
+}
+df1 <- tidy_up(
+    input_df = readr::read_delim(
+      "input.txt", 
+      delim = "|", 
+      col_names = FALSE
+    ),
+    bag_totals = tribble(
+      ~color, ~max_count,
+      "red", 12,
+      "green", 13,
+      "blue", 14
+    )
+  ) 
+```
+
+## Part One
+
+```{r}
+answer_pt1 <- df1 %>% 
+  filter(all(impossible == 0), .by = game) %>% 
+  distinct(game) %>% 
+  summarise(answer = sum(game)) %>% 
+  pull(answer)
+answer_pt1
+```
+
+## Part Two
+
+```{r}
+answer_pt2 <- df1 %>% 
+  summarise(max_count = max(count), .by = c(color, game)) %>% 
+  summarise(power = prod(max_count), .by = game) %>% 
+  summarise(answer = sum(power)) %>% 
+  pull(answer)
+answer_pt2
+```

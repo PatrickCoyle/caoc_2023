@@ -1,0 +1,149 @@
+[
+  {
+    "objectID": "posts/day6/index.html",
+    "href": "posts/day6/index.html",
+    "title": "Day 6",
+    "section": "",
+    "text": "https://adventofcode.com/2023/day/6"
+  },
+  {
+    "objectID": "posts/day6/index.html#preprocessing",
+    "href": "posts/day6/index.html#preprocessing",
+    "title": "Day 6",
+    "section": "Preprocessing",
+    "text": "Preprocessing\n\nrecords &lt;- readr::read_delim(\n  \"input.txt\", \n  delim = \"\\t\", \n  col_names = FALSE\n) %&gt;% \n  transmute(X2 = X1 %&gt;% \n              str_split(\" \") %&gt;% \n              map(~.x %&gt;% \n                    setdiff(c(\"Time:\", \"Distance:\", \"\")) %&gt;% \n                    as.numeric()\n              ))\nquad_fmla_round &lt;- function(a, b, c) {\n  margin &lt;- sqrt(b^2 - 4 * a * c)\n  to_return &lt;- c(\n    \"lower\" = ceiling((-b - margin) / (2 * a)),\n    \"upper\" = floor((-b + margin) / (2 * a))\n  )\n  return(to_return)\n}"
+  },
+  {
+    "objectID": "posts/day6/index.html#part-one",
+    "href": "posts/day6/index.html#part-one",
+    "title": "Day 6",
+    "section": "Part One",
+    "text": "Part One\n\nanswer1 &lt;- tibble(\n  Time = records$X2[[1]],\n  Distance = records$X2[[2]]\n) %&gt;%\n  rowwise() %&gt;% \n  mutate(\n    lims = list(quad_fmla_round(\n      a = 1,\n      b = -1 * Time, \n      c = Distance\n    )),\n    record_distances = lims[[\"upper\"]] - lims[[\"lower\"]] + 1\n  ) %&gt;% \n  ungroup() %&gt;% \n  pull(record_distances) %&gt;%\n  prod()\nanswer1\n\n[1] 449550"
+  },
+  {
+    "objectID": "posts/day6/index.html#part-two",
+    "href": "posts/day6/index.html#part-two",
+    "title": "Day 6",
+    "section": "Part Two",
+    "text": "Part Two\n\nhelper1_day6 &lt;- function (x) {\n  x %&gt;% paste(collapse = \"\") %&gt;% as.numeric()\n}\nrecords_pt2 &lt;- records$X2 %&gt;% \n  map_dbl(helper1_day6) %&gt;% \n  setNames(c(\"Time\", \"Distance\"))\nlims = quad_fmla_round(\n  a = 1, \n  b = -1 * records_pt2[[\"Time\"]], \n  c = records_pt2[[\"Distance\"]]\n)\nanswer2 = lims[[\"upper\"]] - lims[[\"lower\"]] + 1\nanswer2\n\n[1] 28360140"
+  },
+  {
+    "objectID": "posts/day4/index.html",
+    "href": "posts/day4/index.html",
+    "title": "Day 2",
+    "section": "",
+    "text": "https://adventofcode.com/2023/day/4"
+  },
+  {
+    "objectID": "posts/day4/index.html#preprocessing",
+    "href": "posts/day4/index.html#preprocessing",
+    "title": "Day 2",
+    "section": "Preprocessing",
+    "text": "Preprocessing\n\nhelper1_day4 &lt;- function (vec, strs_to_drop) {\n  vec %&gt;% \n    stringr::str_split(\" \") %&gt;% \n    map(~.x %&gt;% \n          setdiff(strs_to_drop) %&gt;% \n          as.numeric() %&gt;% \n          .[!is.na(.)]\n    )\n}\ninput_df = readr::read_delim(\n  \"input.txt\", \n  delim = \"|\", \n  col_names = FALSE\n)\nmy_counts &lt;- input_df %&gt;% \n  transmute(\n    card = 1:n(),\n    winning_numbers = helper1_day4(X1, strs_to_drop = c(\"Card\", \"\")),\n    my_numbers = helper1_day4(X2, strs_to_drop = \"\")\n  ) %&gt;% \n  rowwise() %&gt;% \n  mutate(count = sum(my_numbers %in% winning_numbers)) %&gt;% \n  ungroup()"
+  },
+  {
+    "objectID": "posts/day4/index.html#part-one",
+    "href": "posts/day4/index.html#part-one",
+    "title": "Day 2",
+    "section": "Part One",
+    "text": "Part One\n\nanswer1 &lt;- ifelse(\n  my_counts$count &gt; 0, \n  2^(my_counts$count - 1), \n  0\n) %&gt;% \n  sum()\nanswer1\n\n[1] 21821"
+  },
+  {
+    "objectID": "posts/day4/index.html#part-two",
+    "href": "posts/day4/index.html#part-two",
+    "title": "Day 2",
+    "section": "Part Two",
+    "text": "Part Two\n\ntmp1_pt2 &lt;- my_counts %&gt;% \n  mutate(copies = 1)\nfor (card in 1:nrow(tmp1_pt2)) {\n  this_count &lt;- pull(tmp1_pt2[card,], count)\n  if (this_count &gt; 0) {\n    tmp1_pt2$copies[(card + 1):(card + this_count)] %&lt;&gt;% \n      `+`(tmp1_pt2$copies[card]) ## Syntactic sugar to avoid repeating a long object name\n  }\n}\nanswer2 &lt;- sum(tmp1_pt2$copies)\nanswer2\n\n[1] 5539496"
+  },
+  {
+    "objectID": "posts/day2/index.html",
+    "href": "posts/day2/index.html",
+    "title": "Day 2",
+    "section": "",
+    "text": "https://adventofcode.com/2023/day/2"
+  },
+  {
+    "objectID": "posts/day2/index.html#part-one",
+    "href": "posts/day2/index.html#part-one",
+    "title": "Day 2",
+    "section": "Part One",
+    "text": "Part One\n\nanswer_pt1 &lt;- df1 %&gt;% \n  filter(all(impossible == 0), .by = game) %&gt;% \n  distinct(game) %&gt;% \n  summarise(answer = sum(game)) %&gt;% \n  pull(answer)\nanswer_pt1\n\n[1] 3099"
+  },
+  {
+    "objectID": "posts/day2/index.html#part-two",
+    "href": "posts/day2/index.html#part-two",
+    "title": "Day 2",
+    "section": "Part Two",
+    "text": "Part Two\n\nanswer_pt2 &lt;- df1 %&gt;% \n  summarise(max_count = max(count), .by = c(color, game)) %&gt;% \n  summarise(power = prod(max_count), .by = game) %&gt;% \n  summarise(answer = sum(power)) %&gt;% \n  pull(answer)\nanswer_pt2\n\n[1] 72970"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Season’s Greetings!",
+    "section": "",
+    "text": "Welcome to Patrick Coyle’s Advent of Code 2023 blog.\nMy solutions to each day’s puzzle are here."
+  },
+  {
+    "objectID": "blog.html",
+    "href": "blog.html",
+    "title": "Solutions",
+    "section": "",
+    "text": "Day 1\n\n\n\n\n\n\n\n\n\n\n\n\nDec 11, 2023\n\n\nPatrick Coyle\n\n\n\n\n\n\n  \n\n\n\n\nDay 2\n\n\n\n\n\n\n\n\n\n\n\n\nDec 11, 2023\n\n\nPatrick Coyle\n\n\n\n\n\n\n  \n\n\n\n\nDay 3\n\n\n\n\n\n\n\n\n\n\n\n\nDec 11, 2023\n\n\nPatrick Coyle\n\n\n\n\n\n\n  \n\n\n\n\nDay 4\n\n\n\n\n\n\n\n\n\n\n\n\nDec 11, 2023\n\n\nPatrick Coyle\n\n\n\n\n\n\n  \n\n\n\n\nDay 5\n\n\n\n\n\n\n\n\n\n\n\n\nDec 11, 2023\n\n\nPatrick Coyle\n\n\n\n\n\n\n  \n\n\n\n\nDay 6\n\n\n\n\n\n\n\n\n\n\n\n\nDec 11, 2023\n\n\nPatrick Coyle\n\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "posts/day1/index.html",
+    "href": "posts/day1/index.html",
+    "title": "Day 1",
+    "section": "",
+    "text": "https://adventofcode.com/2023/day/1"
+  },
+  {
+    "objectID": "posts/day1/index.html#preprocessing",
+    "href": "posts/day1/index.html#preprocessing",
+    "title": "Day 1",
+    "section": "Preprocessing",
+    "text": "Preprocessing\n\nhelper1_20231201 &lt;- function (df) {\n  df2 &lt;- df %&gt;% \n    mutate(digit_locs = X1 %&gt;% \n             stringr::str_locate_all(\"[1-9]\") %&gt;% \n             map(~.x[c(1, nrow(.x)), \"start\"])\n    ) %&gt;% \n    rowwise() %&gt;% \n    mutate(X2 = as.numeric(paste0(\n      stringr::str_sub(X1, start = digit_locs[1], end = digit_locs[1]),\n      stringr::str_sub(X1, start = digit_locs[2], end = digit_locs[2])\n    ))) %&gt;% \n    ungroup()\n  return(df2)\n}\ndf1 &lt;- readr::read_delim(\"input.txt\", \n                         delim = \"|\", \n                         col_names = FALSE)"
+  },
+  {
+    "objectID": "posts/day1/index.html#part-1",
+    "href": "posts/day1/index.html#part-1",
+    "title": "Day 1",
+    "section": "Part 1",
+    "text": "Part 1\n\nanswer1 &lt;- df1 %&gt;% \n  helper1_20231201() %&gt;% \n  summarise(sum(X2)) %&gt;% \n  pull()\nprint(answer1)\n\n[1] 54390"
+  },
+  {
+    "objectID": "posts/day3/index.html",
+    "href": "posts/day3/index.html",
+    "title": "Day 3",
+    "section": "",
+    "text": "Puzzle\nhttps://adventofcode.com/2023/day/3"
+  },
+  {
+    "objectID": "posts/day5/index.html",
+    "href": "posts/day5/index.html",
+    "title": "Day 5",
+    "section": "",
+    "text": "https://adventofcode.com/2023/day/5"
+  },
+  {
+    "objectID": "posts/day5/index.html#preprocessing",
+    "href": "posts/day5/index.html#preprocessing",
+    "title": "Day 5",
+    "section": "Preprocessing",
+    "text": "Preprocessing\n\nseeds &lt;- readr::read_delim(\n  \"input.txt\", \n  delim = \" \", \n  skip = 0,\n  n_max = 1,\n  col_names = FALSE\n)\nref_list &lt;- tribble(\n  ~name, ~first_row, ~last_row,\n  \"seed2soil\", 3, 43,\n  \"soil2fert\", 45, 70,\n  \"fert2water\", 72, 114,\n  \"water2light\", 116, 163,\n  \"light2temp\", 165, 181,\n  \"temp2humidity\", 183, 199,\n  \"humidity2loc\", 201, 213\n)\nxwalk_list &lt;- map(\n  1:nrow(ref_list),\n  \\(this_row) ref_list[this_row,] %$% \n    readr::read_delim(\n      \"input.txt\", \n      delim = \" \", \n      skip = first_row,\n      n_max = last_row - first_row,\n      col_names = FALSE\n    ) %&gt;% \n    setNames(c(\"dest\", \"src\", \"len\")) %&gt;% \n    transmute(\n      src,\n      src_max = src + len - 1,\n      dest,\n      dest_max = dest + len - 1\n    )\n) %&gt;% \n  setNames(ref_list$name)"
+  },
+  {
+    "objectID": "posts/day5/index.html#part-one",
+    "href": "posts/day5/index.html#part-one",
+    "title": "Day 5",
+    "section": "Part One",
+    "text": "Part One\n\nhelper1_day5 &lt;- function (prev_df, xwalk) {\n  tmp1 &lt;- xwalk %&gt;% \n    filter(src &lt;= prev_df$this_dest & prev_df$this_dest &lt;= src_max) \n  if (nrow(tmp1) &gt; 0) {\n    to_return &lt;- tmp1 %&gt;% \n      mutate(this_dest = dest + (prev_df$this_dest - src))\n  } else if (nrow(tmp1) == 0) {\n    to_return &lt;- tibble(this_dest = prev_df$this_dest) \n  }\n  return(to_return)\n}\nhelper2_day5 &lt;- function (input, xwalk_list) {\n  tibble(this_dest = input) %&gt;% \n    helper1_day5(xwalk_list$seed2soil) %&gt;% \n    helper1_day5(xwalk_list$soil2fert) %&gt;% \n    helper1_day5(xwalk_list$fert2water) %&gt;% \n    helper1_day5(xwalk_list$water2light) %&gt;%\n    helper1_day5(xwalk_list$light2temp) %&gt;%\n    helper1_day5(xwalk_list$temp2humidity) %&gt;%\n    helper1_day5(xwalk_list$humidity2loc) %&gt;% \n    pull(this_dest)\n}\nanswer1 &lt;- seeds %&gt;% \n  select(-X1) %&gt;% \n  unlist() %&gt;% \n  unname() %&gt;% \n  map_dbl(~helper2_day5(.x, xwalk_list = xwalk_list)) %&gt;% \n  min()\nanswer1\n\n[1] 462648396"
+  },
+  {
+    "objectID": "posts/day5/index.html#part-two",
+    "href": "posts/day5/index.html#part-two",
+    "title": "Day 5",
+    "section": "Part Two",
+    "text": "Part Two"
+  }
+]

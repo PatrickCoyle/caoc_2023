@@ -1,0 +1,53 @@
+---
+title: "Day 3"
+author: "Patrick Coyle"
+date: today
+execute:
+  warning: false
+---
+
+# Puzzle
+
+<https://adventofcode.com/2023/day/3>
+
+<!-- # Solution -->
+
+<!-- ```{r} -->
+<!-- library(dplyr) -->
+<!-- library(purrr) -->
+<!-- library(stringr) -->
+<!-- library(tidyr) -->
+<!-- library(conflicted) -->
+<!-- conflicts_prefer(dplyr::filter) -->
+<!-- helper1_20231206 <- function (x, str) { -->
+<!--   x %>%  -->
+<!--     stringr::str_locate_all(str) %>%  -->
+<!--     map(~.x %>%  -->
+<!--           as_tibble() %>%  -->
+<!--           transmute(column = start, type = names(str)) -->
+<!--     ) -->
+<!-- } -->
+<!-- tidy_up <- function (input_df) { -->
+<!--   input_df %>%  -->
+<!--     mutate( -->
+<!--       X2 = helper1_20231206(X1, c(digit = "[0-9]")), -->
+<!--       X3 = helper1_20231206(X1, c(period = "\\.")) -->
+<!--     ) %>% -->
+<!--     rowwise() %>% -->
+<!--     transmute( -->
+<!--       row = 1:n(), -->
+<!--       X4 = tibble(column = 1:140) %>%  -->
+<!--         left_join(bind_rows(X2, X3), by = "column") %>%  -->
+<!--         mutate(type = case_when(is.na(type) ~ "symbol", TRUE ~ type)) %>%  -->
+<!--         list() -->
+<!--     ) %>% -->
+<!--     ungroup() %>%  -->
+<!--     unnest(cols = X4) -->
+<!-- } -->
+<!-- input_df = readr::read_delim( -->
+<!--   "input.txt",  -->
+<!--   delim = "|",  -->
+<!--   col_names = FALSE -->
+<!-- ) -->
+<!-- df2 <- tidy_up(input_df) -->
+<!-- ``` -->

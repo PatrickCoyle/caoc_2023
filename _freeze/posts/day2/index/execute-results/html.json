@@ -1,0 +1,14 @@
+{
+  "hash": "56f8d888532e689983db11647755618b",
+  "result": {
+    "markdown": "---\ntitle: \"Day 2\"\nauthor: \"Patrick Coyle\"\ndate: today\nexecute:\n  warning: false\n---\n\n\n# Puzzle\n\n<https://adventofcode.com/2023/day/2>\n\n# Solution\n\n\n::: {.cell}\n\n```{.r .cell-code}\nlibrary(dplyr)\nlibrary(purrr)\nlibrary(stringr)\nlibrary(tidyr)\nlibrary(conflicted)\nconflicts_prefer(dplyr::filter)\ntidy_up <- function (input_df, bag_totals) {\n  to_return <- input_df %>% \n    mutate(X2 = X1 %>% \n             stringr::str_remove(\"Game \") %>% \n             stringr::str_split(\": \")\n    ) %>% \n    rowwise() %>% \n    transmute(game = as.numeric(X2[1]), X4 = X2[2]) %>% \n    ungroup() %>% \n    mutate(X5 = X4 %>% \n             stringr::str_split(\"; \") %>% \n             map(\\(x) x %>% \n                   stringr::str_split(\", \") %>% \n                   imap_dfr(\\(y1, y2) y1 %>% \n                              stringr::str_split(\" \") %>% \n                              map_dfr(\\(z) tibble(count = as.numeric(z[1]), \n                                                  color = z[2])) %>% \n                              mutate(iter = y2)\n                   ))) %>% \n    unnest(cols = c(X5)) %>% \n    left_join(bag_totals) %>% \n    mutate(impossible = as.numeric(count > max_count))\n  return(to_return)\n}\ndf1 <- tidy_up(\n    input_df = readr::read_delim(\n      \"input.txt\", \n      delim = \"|\", \n      col_names = FALSE\n    ),\n    bag_totals = tribble(\n      ~color, ~max_count,\n      \"red\", 12,\n      \"green\", 13,\n      \"blue\", 14\n    )\n  ) \n```\n:::\n\n\n## Part One\n\n\n::: {.cell}\n\n```{.r .cell-code}\nanswer_pt1 <- df1 %>% \n  filter(all(impossible == 0), .by = game) %>% \n  distinct(game) %>% \n  summarise(answer = sum(game)) %>% \n  pull(answer)\nanswer_pt1\n```\n\n::: {.cell-output .cell-output-stdout}\n```\n[1] 3099\n```\n:::\n:::\n\n\n## Part Two\n\n\n::: {.cell}\n\n```{.r .cell-code}\nanswer_pt2 <- df1 %>% \n  summarise(max_count = max(count), .by = c(color, game)) %>% \n  summarise(power = prod(max_count), .by = game) %>% \n  summarise(answer = sum(power)) %>% \n  pull(answer)\nanswer_pt2\n```\n\n::: {.cell-output .cell-output-stdout}\n```\n[1] 72970\n```\n:::\n:::\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

@@ -1,0 +1,87 @@
+---
+title: "Day 6"
+author: "Patrick Coyle"
+date: today
+execute:
+  warning: false
+---
+
+```{r setup, include = FALSE}
+library(dplyr)
+library(magrittr) ## I use `%<>%` sometimes
+library(purrr)
+library(stringr)
+library(tidyr)
+library(conflicted)
+conflicts_prefer(dplyr::filter)
+```
+
+# Puzzle
+
+<https://adventofcode.com/2023/day/6>
+
+# Solution
+
+## Preprocessing
+
+```{r}
+records <- readr::read_delim(
+  "input.txt", 
+  delim = "\t", 
+  col_names = FALSE
+) %>% 
+  transmute(X2 = X1 %>% 
+              str_split(" ") %>% 
+              map(~.x %>% 
+                    setdiff(c("Time:", "Distance:", "")) %>% 
+                    as.numeric()
+              ))
+quad_fmla_round <- function(a, b, c) {
+  margin <- sqrt(b^2 - 4 * a * c)
+  to_return <- c(
+    "lower" = ceiling((-b - margin) / (2 * a)),
+    "upper" = floor((-b + margin) / (2 * a))
+  )
+  return(to_return)
+}
+```
+
+## Part One
+
+```{r}
+answer1 <- tibble(
+  Time = records$X2[[1]],
+  Distance = records$X2[[2]]
+) %>%
+  rowwise() %>% 
+  mutate(
+    lims = list(quad_fmla_round(
+      a = 1,
+      b = -1 * Time, 
+      c = Distance
+    )),
+    record_distances = lims[["upper"]] - lims[["lower"]] + 1
+  ) %>% 
+  ungroup() %>% 
+  pull(record_distances) %>%
+  prod()
+answer1
+```
+
+## Part Two
+
+```{r}
+helper1_day6 <- function (x) {
+  x %>% paste(collapse = "") %>% as.numeric()
+}
+records_pt2 <- records$X2 %>% 
+  map_dbl(helper1_day6) %>% 
+  setNames(c("Time", "Distance"))
+lims = quad_fmla_round(
+  a = 1, 
+  b = -1 * records_pt2[["Time"]], 
+  c = records_pt2[["Distance"]]
+)
+answer2 = lims[["upper"]] - lims[["lower"]] + 1
+answer2
+```

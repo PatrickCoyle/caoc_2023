@@ -1,0 +1,145 @@
+---
+title: "Day 5"
+author: "Patrick Coyle"
+date: today
+execute:
+  warning: false
+---
+
+```{r setup, include = FALSE}
+library(dplyr)
+library(magrittr) ## I use `%<>%` sometimes
+library(purrr)
+library(stringr)
+library(tidyr)
+library(conflicted)
+conflicts_prefer(dplyr::filter)
+```
+
+# Puzzle
+
+<https://adventofcode.com/2023/day/5>
+
+# Solution
+
+## Preprocessing
+
+```{r, warning = FALSE, message = FALSE}
+seeds <- readr::read_delim(
+  "input.txt", 
+  delim = " ", 
+  skip = 0,
+  n_max = 1,
+  col_names = FALSE
+)
+ref_list <- tribble(
+  ~name, ~first_row, ~last_row,
+  "seed2soil", 3, 43,
+  "soil2fert", 45, 70,
+  "fert2water", 72, 114,
+  "water2light", 116, 163,
+  "light2temp", 165, 181,
+  "temp2humidity", 183, 199,
+  "humidity2loc", 201, 213
+)
+xwalk_list <- map(
+  1:nrow(ref_list),
+  \(this_row) ref_list[this_row,] %$% 
+    readr::read_delim(
+      "input.txt", 
+      delim = " ", 
+      skip = first_row,
+      n_max = last_row - first_row,
+      col_names = FALSE
+    ) %>% 
+    setNames(c("dest", "src", "len")) %>% 
+    transmute(
+      src,
+      src_max = src + len - 1,
+      dest,
+      dest_max = dest + len - 1
+    )
+) %>% 
+  setNames(ref_list$name)
+```
+
+## Part One
+
+```{r}
+helper1_day5 <- function (prev_df, xwalk) {
+  tmp1 <- xwalk %>% 
+    filter(src <= prev_df$this_dest & prev_df$this_dest <= src_max) 
+  if (nrow(tmp1) > 0) {
+    to_return <- tmp1 %>% 
+      mutate(this_dest = dest + (prev_df$this_dest - src))
+  } else if (nrow(tmp1) == 0) {
+    to_return <- tibble(this_dest = prev_df$this_dest) 
+  }
+  return(to_return)
+}
+helper2_day5 <- function (input, xwalk_list) {
+  tibble(this_dest = input) %>% 
+    helper1_day5(xwalk_list$seed2soil) %>% 
+    helper1_day5(xwalk_list$soil2fert) %>% 
+    helper1_day5(xwalk_list$fert2water) %>% 
+    helper1_day5(xwalk_list$water2light) %>%
+    helper1_day5(xwalk_list$light2temp) %>%
+    helper1_day5(xwalk_list$temp2humidity) %>%
+    helper1_day5(xwalk_list$humidity2loc) %>% 
+    pull(this_dest)
+}
+answer1 <- seeds %>% 
+  select(-X1) %>% 
+  unlist() %>% 
+  unname() %>% 
+  map_dbl(~helper2_day5(.x, xwalk_list = xwalk_list)) %>% 
+  min()
+answer1
+```
+
+<!-- ## Part Two -->
+
+<!-- ```{r, warnings = FALSE} -->
+<!-- helper3_day5 <- function (prev_df, xwalk) { -->
+<!--   tmp1 <- xwalk %>%  -->
+<!--     filter(src <= prev_df$this_dest & prev_df$this_dest <= src_max) -->
+<!--   if (nrow(tmp1) == 1) { -->
+<!--     to_return <- tmp1 %>%  -->
+<!--       mutate(this_dest = dest + (prev_df$this_dest - src), -->
+<!--              this_dest_max = dest_max + (prev_df$this_dest - src)) -->
+<!--   } else if (nrow(tmp1) == 0) { -->
+<!--     to_return <- tibble(this_dest = prev_df$this_dest, -->
+<!--                         this_dest_max = prev_df$this_dest_max) -->
+<!--   } else if (nrow(tmp1) > 1) { -->
+<!--     stop("More than one match") -->
+<!--   } -->
+<!--   return(to_return) -->
+<!-- } -->
+<!-- helper4_day5 <- function (input, xwalk_list) { -->
+<!--   input %>%  -->
+<!--     helper3_day5(xwalk_list$seed2soil) %>%  -->
+<!--     helper3_day5(xwalk_list$soil2fert) %>% -->
+<!--     helper3_day5(xwalk_list$fert2water) %>% -->
+<!--     helper3_day5(xwalk_list$water2light) %>% -->
+<!--     helper3_day5(xwalk_list$light2temp) %>% -->
+<!--     helper3_day5(xwalk_list$temp2humidity) %>% -->
+<!--     helper3_day5(xwalk_list$humidity2loc)  -->
+<!-- } -->
+<!-- seeds_df <- seeds %>%  -->
+<!--   select(-X1) %>%  -->
+<!--   unlist() %>%  -->
+<!--   unname() %>%  -->
+<!--   matrix(ncol = 2, byrow = TRUE) %>%  -->
+<!--   as_tibble() %>%  -->
+<!--   setNames(c("seed", "len")) %>%  -->
+<!--   transmute(this_dest = seed, this_dest_max = seed + len) -->
+<!-- answer2_list <- map( -->
+<!--   1:nrow(seeds_df), -->
+<!--   ~ seeds_df %>%  -->
+<!--     slice(.x) %>%  -->
+<!--     helper4_day5(xwalk_list) -->
+<!-- ) -->
+<!-- answer2_list %>%  -->
+<!--   map_dbl(~.x$this_dest) %>%  -->
+<!--   min() -->
+<!-- ``` -->

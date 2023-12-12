@@ -1,0 +1,103 @@
+---
+title: "Day 1"
+author: "Patrick Coyle"
+date: today
+execute:
+  warning: false
+---
+
+```{r setup, include = FALSE}
+library(dplyr)
+library(magrittr) ## I use `%<>%` sometimes
+library(purrr)
+library(stringr)
+library(tidyr)
+library(conflicted)
+library(readr)
+conflicts_prefer(dplyr::filter)
+```
+
+# Puzzle
+
+<https://adventofcode.com/2023/day/1>
+
+# Solution
+
+## Preprocessing
+
+```{r, message = FALSE}
+helper1_20231201 <- function (df) {
+  df2 <- df %>% 
+    mutate(digit_locs = X1 %>% 
+             stringr::str_locate_all("[1-9]") %>% 
+             map(~.x[c(1, nrow(.x)), "start"])
+    ) %>% 
+    rowwise() %>% 
+    mutate(X2 = as.numeric(paste0(
+      stringr::str_sub(X1, start = digit_locs[1], end = digit_locs[1]),
+      stringr::str_sub(X1, start = digit_locs[2], end = digit_locs[2])
+    ))) %>% 
+    ungroup()
+  return(df2)
+}
+df1 <- readr::read_delim("input.txt", 
+                         delim = "|", 
+                         col_names = FALSE)
+
+```
+
+## Part 1
+
+```{r}
+answer1 <- df1 %>% 
+  helper1_20231201() %>% 
+  summarise(sum(X2)) %>% 
+  pull()
+print(answer1)
+```
+
+<!-- ## Part 2 -->
+
+<!-- ```{r} -->
+<!-- df2 <- df1 %>% -->
+<!--   mutate( -->
+<!--     check1 = str_locate_all(X1, "one|two|three|four|five|six|seven|eight|nine") -->
+<!--   ) -->
+<!-- my_xwalk1 <- tibble( -->
+<!--   string = c("one", "two", "three", "four", "five", "six", "seven", "eight", "nine") -->
+<!-- ) %>%  -->
+<!--   mutate( -->
+<!--     number = 1:9 %>%  -->
+<!--       as.character() %>%  -->
+<!--       stringr::str_pad(width = nchar(string), side = "left", pad = "-") -->
+<!--   ) -->
+<!-- for (this_row in 1:nrow(df2)) { -->
+<!--   if (nrow(df2[this_row,]$check1[[1]]) > 0) { -->
+<!--     tmp1 <- df2[this_row,]$check1[[1]] %>%  -->
+<!--       as_tibble() %>%  -->
+<!--       mutate(string = stringr::str_sub(df2[this_row,]$X1, start, end)) %>%  -->
+<!--       left_join(my_xwalk1, by = "string") -->
+<!--     for (inner_row in 1:nrow(df2[this_row,]$check1[[1]])) {  -->
+<!--       tmp2 <- tmp1[inner_row,]  -->
+<!--       str_sub( -->
+<!--         df2[this_row,]$X1, -->
+<!--         start = tmp2$start, -->
+<!--         end = tmp2$end -->
+<!--       ) %<>%  -->
+<!--         str_replace( -->
+<!--           pattern = tmp2$string, -->
+<!--           replacement = tmp2$number -->
+<!--         ) -->
+<!--       # df2[this_row,]$X1 %<>% stringr::str_replace( -->
+<!--       #   pattern = pull(tmp2, string), -->
+<!--       #   replacement = pull(tmp2, number) -->
+<!--       # ) -->
+<!--     } -->
+<!--   } -->
+<!-- } -->
+<!-- answer2 <- df2 %>% -->
+<!--   helper1_20231201() %>% -->
+<!--   summarise(sum(X2)) %>% -->
+<!--   pull() -->
+<!-- print(answer2) -->
+<!-- ``` -->
