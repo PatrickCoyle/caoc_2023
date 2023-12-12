@@ -3,6 +3,10 @@ title: "Season's Greetings!"
 image: aoc2023.jpg
 about:
   template: jolla
+  links:
+    - icon: github
+      text: Github
+      href: https://github.com/PatrickCoyle/caoc_2023
 ---
 
 Welcome to Patrick Coyle's [Advent of Code 2023](https://adventofcode.com/) blog.
