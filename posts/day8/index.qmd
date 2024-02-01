@@ -1,0 +1,125 @@
+---
+title: "Day 8\t\u22C6\u22C6"
+date: "2023-12-08"
+execute:
+  warning: false
+  message: false
+---
+
+```{r setup, include = FALSE}
+library(dplyr)
+library(magrittr) ## I use `%<>%` sometimes
+library(purrr)
+library(stringr)
+library(tidyr)
+library(conflicted)
+library(janitor)
+conflicts_prefer(dplyr::filter)
+options(digits = 15)
+```
+
+# Puzzle
+
+<https://adventofcode.com/2023/day/8>
+
+# Solution
+
+## Preprocessing
+
+```{r}
+library(Matrix)
+library(igraph)
+library(numbers)
+directions0 <- readr::read_delim(
+  "input.txt", 
+  delim = " ",
+  n_max = 1,
+  col_names = FALSE
+) %>% 
+  pull(X1) %>% 
+  str_split("") %>% 
+  .[[1]]
+directions <- case_when(
+  directions0 == "L"  ~ "to_left",
+  directions0 == "R" ~ "to_right"
+)
+edgelist <- readr::read_delim(
+  "input.txt", 
+  delim = " = ",
+  skip = 1,
+  col_names = FALSE
+) %>% 
+  mutate(X3 = X2 %>% 
+           str_remove_all("\\(|\\)") %>% 
+           str_split(", ")
+  ) %>% 
+  transmute(
+    from = X1,
+    to_left = X3 %>% map_chr(~.x[1]),
+    to_right = X3 %>% map_chr(~.x[2])
+  ) %>% 
+  arrange(from)
+adj_list <- c("to_left", "to_right") %>% 
+  setNames(., .) %>% 
+  map(~edgelist %>% 
+        select(all_of(c('from', .x))) %>% 
+        igraph::graph_from_data_frame(directed = TRUE) %>% 
+        igraph::as_adjacency_matrix() 
+  )
+```
+
+## Part One
+
+```{r}
+helper1_day8 <- function (pos, edgelist, end_node) {
+  this_node <- edgelist$from[which(pos == 1)]
+  counter <- 0
+  while (this_node != end_node) {
+    this_direction <- directions[(counter %% length(directions)) + 1]
+    pos <- (pos %*% adj_list[[this_direction]])[1,]
+    this_node <- edgelist$from[which(pos == 1)]
+    counter <- counter + 1
+  }
+  return(counter)
+}
+init_node <- Matrix::Matrix(
+  data = c(1, rep(0, nrow(edgelist) - 1)),
+  nrow = 1
+) 
+answer1 <- init_node %>% 
+  # GPUmatrix::gpu.matrix() %>% 
+  helper1_day8(
+    edgelist = edgelist,
+    end_node = "ZZZ"
+  )
+answer1
+```
+
+## Part Two
+
+```{r}
+helper2_day8 <- function (pos, edgelist, end_node, to_detect = NULL) {
+  this_node <- edgelist$from[which(pos == 1)]
+  counter <- 0
+  while (str_sub(this_node, 3L) != to_detect) {
+    this_direction <- directions[(counter %% length(directions)) + 1]
+    pos <- (pos %*% adj_list[[this_direction]])[1,]
+    this_node <- edgelist$from[which(pos == 1)]
+    counter <- counter + 1
+  }
+  return(counter)
+}
+answer2 <- which(stringr::str_sub(edgelist$from, 3L) == "A") %>% 
+  map_int(~Matrix::Matrix(
+    data = as.numeric(1:nrow(edgelist) == .x),
+    nrow = 1
+  ) %>% 
+    helper2_day8(
+      edgelist = edgelist,
+      end_node = init_node,
+      to_detect = "Z"
+    )
+  ) %>% 
+  numbers::mLCM()
+answer2
+```

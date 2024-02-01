@@ -1,0 +1,124 @@
+---
+title: "Day 7\t\u22C6"
+date: "2023-12-07"
+execute:
+  warning: false
+  message: false
+---
+
+```{r setup, include = FALSE}
+library(dplyr)
+library(magrittr) ## I use `%<>%` sometimes
+library(purrr)
+library(stringr)
+library(tidyr)
+library(conflicted)
+library(janitor)
+conflicts_prefer(dplyr::filter)
+```
+
+# Puzzle
+
+<https://adventofcode.com/2023/day/7>
+
+# Solution
+
+## Preprocessing
+
+```{r}
+records <- readr::read_delim(
+  "input.txt", 
+  delim = " ", 
+  col_names = FALSE
+)
+records2 <- records %>%
+  transmute(
+    hand_number = 1:n(),
+    cards = X1 %>% 
+      stringr::str_split("") %>% 
+      map(as_tibble),
+    card_count = map(cards, ~count(.x, value)),
+    bid = X2
+  ) 
+helper1_day7 <- function (input_df, card_ordering) {
+  to_return <- left_join(
+    input_df %>% 
+      unnest(cols = c(card_count)) %>% 
+      summarise(
+        type = case_when(
+          any(n == 5) ~ "five of a kind",
+          any(n == 4) ~ "four of a kind",
+          any(n == 3) & any(n == 2) ~ "full house",
+          any(n == 3) ~ "three of a kind",
+          sum(n == 2) == 2 ~ "two pairs",
+          any(n == 2) ~ "one pair",
+          TRUE ~ "high card"
+        ),
+        .by = hand_number
+      ),
+    input_df %>% 
+      select(hand_number, cards, bid), 
+    by = "hand_number"
+  ) %>% 
+    group_split(type) %>% 
+    setNames(., map_chr(., \(x) as.character(x$type[1]))) %>% 
+    map_dfr(\(outer_tbl, name) bind_cols(
+      select(outer_tbl, -cards),
+      outer_tbl$cards %>% 
+        map_dfr(\(inner_tbl) as_tibble(t(inner_tbl)))
+    )) %>% 
+    mutate(
+      across(type, ~.x %>% factor(levels = c(
+        "five of a kind",
+        "four of a kind",
+        "full house",
+        "three of a kind",
+        "two pairs",
+        "one pair",
+        "high card"
+      ))),
+      across(c(V1, V2, V3, V4, V5), ~factor(.x, levels = card_ordering))
+    ) %>% 
+    arrange(type, V1, V2, V3, V4, V5) %>% 
+    mutate(rank = n():1, winnings = bid * rank) %>% 
+    pull(winnings) %>% 
+    sum()
+  return(to_return)
+}
+```
+
+## Part One
+
+```{r}
+answer1 <- records2 %>% 
+  helper1_day7(card_ordering = c("A", "K", "Q", "J", "T", "9", "8", "7", "6", "5", "4", "3", "2"))
+answer1
+```
+
+## Part Two
+
+I haven't solved this part yet!
+
+<!-- ```{r} -->
+<!-- helper2_day7 <- function (x) { -->
+<!--   max_loc <- case_when( -->
+<!--     all(x$n[x$value != "J"] == 1) ~ which(x$value != "J")[1], # If all non-jokers appear only once, then add jokers to count for first non-joker -->
+<!--     TRUE ~ which(x$n == max(x$n) & x$value != "J")[1] # otherwise, add jokers to the first element whose count is equal to the max and is not a joker -->
+<!--   ) -->
+<!--   to_return <- x %>%  -->
+<!--     mutate( -->
+<!--       pos = 1:n(), -->
+<!--       value = case_when( -->
+<!--         pos == max_loc | value == "J" ~ "J", -->
+<!--         TRUE ~ value -->
+<!--       ) -->
+<!--     ) %>% -->
+<!--     select(-pos) %>%  -->
+<!--     summarise(across(n, sum), .by = value) -->
+<!--   return(to_return) -->
+<!-- } -->
+<!-- answer2 <- records2 %>%  -->
+<!--   mutate(card_count = map(card_count, helper2_day7)) %>%  -->
+<!--   helper1_day7(card_ordering = c("A", "K", "Q", "T", "9", "8", "7", "6", "5", "4", "3", "2", "J")) -->
+<!-- answer2 # 247863671 wrong -->
+<!-- ``` -->

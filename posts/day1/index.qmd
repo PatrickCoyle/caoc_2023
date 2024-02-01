@@ -1,7 +1,6 @@
 ---
-title: "Day 1"
-author: "Patrick Coyle"
-date: today
+title: "Day 1\t\u22C6"
+date: "2023-12-01"
 execute:
   warning: false
 ---
@@ -56,7 +55,9 @@ answer1 <- df1 %>%
 print(answer1)
 ```
 
-<!-- ## Part 2 -->
+## Part 2
+
+I haven't solved this part yet!
 
 <!-- ```{r} -->
 <!-- df2 <- df1 %>% -->

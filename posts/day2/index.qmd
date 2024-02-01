@@ -1,7 +1,6 @@
 ---
-title: "Day 2"
-author: "Patrick Coyle"
-date: today
+title: "Day 2\t\u22C6\u22C6"
+date: "2023-12-02"
 execute:
   warning: false
 ---

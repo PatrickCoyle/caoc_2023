@@ -6,10 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Patrick Coyle">
-<meta name="dcterms.date" content="2023-12-11">
+<meta name="dcterms.date" content="2023-12-05">
 
-<title>caoc_2023 - Day 5</title>
+<title>caoc_2023 - Day 5 ⋆</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -144,24 +143,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Day 5</h1>
+<h1 class="title">Day 5 ⋆</h1>
 </div>
 
 
 
 <div class="quarto-title-meta column-page">
 
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>Patrick Coyle </p>
-          </div>
-  </div>
     
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">December 11, 2023</p>
+      <p class="date">December 5, 2023</p>
     </div>
   </div>
   
@@ -258,6 +251,51 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="part-two" class="level2">
 <h2 class="anchored" data-anchor-id="part-two">Part Two</h2>
+<p>I haven’t solved this part yet!</p>
+<!-- ```{r, warnings = FALSE} -->
+<!-- helper3_day5 <- function (prev_df, xwalk) { -->
+<!--   tmp1 <- xwalk %>%  -->
+<!--     filter(src <= prev_df$this_dest & prev_df$this_dest <= src_max) -->
+<!--   if (nrow(tmp1) == 1) { -->
+<!--     to_return <- tmp1 %>%  -->
+<!--       mutate(this_dest = dest + (prev_df$this_dest - src), -->
+<!--              this_dest_max = dest_max + (prev_df$this_dest - src)) -->
+<!--   } else if (nrow(tmp1) == 0) { -->
+<!--     to_return <- tibble(this_dest = prev_df$this_dest, -->
+<!--                         this_dest_max = prev_df$this_dest_max) -->
+<!--   } else if (nrow(tmp1) > 1) { -->
+<!--     stop("More than one match") -->
+<!--   } -->
+<!--   return(to_return) -->
+<!-- } -->
+<!-- helper4_day5 <- function (input, xwalk_list) { -->
+<!--   input %>%  -->
+<!--     helper3_day5(xwalk_list$seed2soil) %>%  -->
+<!--     helper3_day5(xwalk_list$soil2fert) %>% -->
+<!--     helper3_day5(xwalk_list$fert2water) %>% -->
+<!--     helper3_day5(xwalk_list$water2light) %>% -->
+<!--     helper3_day5(xwalk_list$light2temp) %>% -->
+<!--     helper3_day5(xwalk_list$temp2humidity) %>% -->
+<!--     helper3_day5(xwalk_list$humidity2loc)  -->
+<!-- } -->
+<!-- seeds_df <- seeds %>%  -->
+<!--   select(-X1) %>%  -->
+<!--   unlist() %>%  -->
+<!--   unname() %>%  -->
+<!--   matrix(ncol = 2, byrow = TRUE) %>%  -->
+<!--   as_tibble() %>%  -->
+<!--   setNames(c("seed", "len")) %>%  -->
+<!--   transmute(this_dest = seed, this_dest_max = seed + len) -->
+<!-- answer2_list <- map( -->
+<!--   1:nrow(seeds_df), -->
+<!--   ~ seeds_df %>%  -->
+<!--     slice(.x) %>%  -->
+<!--     helper4_day5(xwalk_list) -->
+<!-- ) -->
+<!-- answer2_list %>%  -->
+<!--   map_dbl(~.x$this_dest) %>%  -->
+<!--   min() -->
+<!-- ``` -->
 
 
 </section>
